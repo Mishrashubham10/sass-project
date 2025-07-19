@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   if (products.length == 0) return <NoProducts />;
   return (
     <>
-      <h2 className="mb-6 text-3xl font-semibold flex justify-between">
+      <h2 className="mb-6 text-3xl font-semibold flex justify-between px-8">
         <Link
           className="group flex gap-2 items-center hover:underline"
           href="/dashboard/products"

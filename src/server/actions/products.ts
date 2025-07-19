@@ -10,14 +10,19 @@ import { auth } from '@clerk/nextjs/server';
 import z from 'zod';
 
 // =========== CREATE PRODDUCT DB ==============
-import { createProduct as createProductDb } from '@/server/db/products';
+import {
+  createProduct as createProductDb,
+  deleteProduct as deleteProductDb,
+} from '@/server/db/products';
 
 // ========== NEXT NAVIGATION ===========
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
+// =========== CREATE PRODUCT ACTION ==============
 export async function createProdudct(
   unsafeData: z.infer<typeof productDetailsSchema>
-): Promise<{ error: boolean, message: string } | undefined> {
+): Promise<{ error: boolean; message: string } | undefined> {
   const { userId } = await auth();
   const { success, data } = productDetailsSchema.safeParse(unsafeData);
 
@@ -28,4 +33,24 @@ export async function createProdudct(
   const { id } = await createProductDb({ ...data, clerkUserId: userId });
 
   redirect(`/dashboard/products/${id}/edit?tab=countries`);
+}
+
+// =========== DELETE PRODUCT ACTION ==============
+export async function deleteProduct(id: string) {
+  const { userId } = await auth();
+
+  const errorMsg = 'There was an error deleting your product.';
+
+  if (userId == null)
+    return {
+      error: true,
+      message: errorMsg,
+    };
+
+  const isSuccess = await deleteProductDb({ id, userId });
+
+  return {
+    error: !isSuccess,
+    message: isSuccess ? 'Successfully deleted your product' : errorMsg,
+  };
 }

@@ -1,6 +1,6 @@
 import { db } from '@/drizzle/db';
 import { ProductCustomizationTable, ProductTable } from '@/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 // ============== GET PRODUCTS ================
 export function getProducts(userId: string, { limit }: { limit?: number }) {
@@ -31,4 +31,19 @@ export async function createProduct(data: typeof ProductTable.$inferInsert) {
   }
 
   return newProduct;
+}
+
+// ============== DELETE PRODUCTS ================
+export async function deleteProduct({
+  id,
+  userId,
+}: {
+  id: string;
+  userId: string;
+}) {
+  const { rowCount } = await db
+    .delete(ProductTable)
+    .where(and(eq(ProductTable.id, id), eq(ProductTable.clerkUserId, userId)));
+
+  return rowCount > 0;
 }

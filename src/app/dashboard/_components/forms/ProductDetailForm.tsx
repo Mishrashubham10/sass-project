@@ -55,7 +55,7 @@ export default function ProductDetailForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex gap-6 flex-col"
+        className="flex gap-6 flex-col justify-center"
       >
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           {/* ========= NAME FIELD ========= */}

@@ -8,10 +8,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { CopyCheckIcon, CopyIcon, CopyXIcon, Icon } from 'lucide-react';
+import { env } from '@/data/env/client';
+import { CopyCheckIcon, CopyIcon, CopyXIcon } from 'lucide-react';
+import { useState } from 'react';
+
+type CopyState = 'idle' | 'copied' | 'error';
 
 export default function AddToSiteProductModalContent({ id }: { id: string }) {
-  const code = `<script src="${process.env.NEXT_PUBLIC_SERVER_URL}/api/products/${id}/banner"></script>`;
+  const [copyState, setCopyState] = useState<CopyState>('idle');
+  const code = `<script src="${env.NEXT_PUBLIC_SERVER_URL}/api/products/${id}/banner"></script>`;
+  const Icon = getCopyIcon(copyState);
 
   return (
     <DialogContent className="max-w-max bg-white">
@@ -32,15 +38,15 @@ export default function AddToSiteProductModalContent({ id }: { id: string }) {
               .writeText(code)
               .then(() => {
                 setCopyState('copied');
-                setTimeout(() => setCopyState('idle'), 3000);
+                setTimeout(() => setCopyState('idle'), 2000);
               })
               .catch(() => {
                 setCopyState('error');
-                setTimeout(() => setCopyState('idle'), 3000);
+                setTimeout(() => setCopyState('idle'), 2000);
               });
           }}
         >
-          <Icon className="size-4 mr-2" />
+          {<Icon className="size-4 mr-2" />}
           {getChildren(copyState)}
         </Button>
         <DialogClose asChild>
@@ -51,7 +57,7 @@ export default function AddToSiteProductModalContent({ id }: { id: string }) {
   );
 }
 
-function getCopyIcon(copyState: copyState) {
+function getCopyIcon(copyState: CopyState) {
   switch (copyState) {
     case 'idle':
       return CopyIcon;
@@ -62,7 +68,7 @@ function getCopyIcon(copyState: copyState) {
   }
 }
 
-function getChildren(copyState: copyState) {
+function getChildren(copyState: CopyState) {
   switch (copyState) {
     case 'idle':
       return 'Copy Code';
