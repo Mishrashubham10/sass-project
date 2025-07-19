@@ -23,20 +23,32 @@ import { Button } from '@/components/ui/button';
 
 // ========= PRODUCT SCHEMA =========
 import { productDetailsSchema } from '@/schema/products';
-import { createProdudct } from '@/server/actions/products';
+import { createProdudct, updateProdudct } from '@/server/actions/products';
 import { toast } from 'sonner';
 
-export default function ProductDetailForm() {
+export default function ProductDetailForm({
+  product,
+}: {
+  product?: {
+    id: string;
+    name: string;
+    description: string;
+    url: string;
+  };
+}) {
   const form = useForm<z.infer<typeof productDetailsSchema>>({
     resolver: zodResolver(productDetailsSchema),
-    defaultValues: {
-      name: '',
-      url: '',
-      description: '',
-    },
+    defaultValues: product
+      ? { ...product, description: product?.description ?? '' }
+      : {
+          name: '',
+          url: '',
+          description: '',
+        },
   });
 
   async function onSubmit(values: z.infer<typeof productDetailsSchema>) {
+    const action = product == null ? createProdudct : updateProdudct.bind(null, product.id);
     const data = await createProdudct(values);
 
     if (data?.message) {

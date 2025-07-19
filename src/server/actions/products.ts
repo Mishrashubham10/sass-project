@@ -13,11 +13,11 @@ import z from 'zod';
 import {
   createProduct as createProductDb,
   deleteProduct as deleteProductDb,
+  updateProduct as updateProductDb,
 } from '@/server/db/products';
 
 // ========== NEXT NAVIGATION ===========
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 
 // =========== CREATE PRODUCT ACTION ==============
 export async function createProdudct(
@@ -33,6 +33,27 @@ export async function createProdudct(
   const { id } = await createProductDb({ ...data, clerkUserId: userId });
 
   redirect(`/dashboard/products/${id}/edit?tab=countries`);
+}
+
+// =========== UPDATE PRODUCT ACTION ==============
+export async function updateProdudct(
+  id: string,
+  unsafeData: z.infer<typeof productDetailsSchema>
+): Promise<{ error: boolean; message: string } | undefined> {
+  const { userId } = await auth();
+  const { success, data } = productDetailsSchema.safeParse(unsafeData);
+  const errorMsg = 'There was an error updating your product';
+
+  if (!success || userId == null) {
+    return { error: true, message: errorMsg };
+  }
+
+  const isSuccess = await updateProductDb(data, { id, userId });
+
+  return {
+    error: false,
+    message: isSuccess ? 'Product details updated' : errorMsg,
+  };
 }
 
 // =========== DELETE PRODUCT ACTION ==============
