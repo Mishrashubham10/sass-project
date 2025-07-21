@@ -48,8 +48,9 @@ export default function ProductDetailForm({
   });
 
   async function onSubmit(values: z.infer<typeof productDetailsSchema>) {
-    const action = product == null ? createProdudct : updateProdudct.bind(null, product.id);
-    const data = await createProdudct(values);
+    const action =
+      product == null ? createProdudct : updateProdudct.bind(null, product.id);
+    const data = await action(values);
 
     if (data?.message) {
       toast(data.message, {
@@ -67,16 +68,18 @@ export default function ProductDetailForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex gap-6 flex-col justify-center"
+        className="flex gap-6 flex-col"
       >
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-          {/* ========= NAME FIELD ========= */}
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Product Name</FormLabel>
+                <FormLabel>
+                  Product Name
+                  {/* <RequiredLabelIcon /> */}
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -84,13 +87,15 @@ export default function ProductDetailForm({
               </FormItem>
             )}
           />
-          {/* ========== URL FIELD ========= */}
           <FormField
             control={form.control}
             name="url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Enter your website URL</FormLabel>
+                <FormLabel>
+                  Enter your website URL
+                  {/* <RequiredLabelIcon /> */}
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -103,7 +108,6 @@ export default function ProductDetailForm({
             )}
           />
         </div>
-        {/* ========== DESCRIPTION ========== */}
         <FormField
           control={form.control}
           name="description"

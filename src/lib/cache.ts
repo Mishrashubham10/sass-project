@@ -11,6 +11,8 @@ export const CACHE_TAGS = {
   products: 'products',
   productViews: 'productViews',
   subscription: 'subscription',
+  countryGroups: 'countryGroups',
+  countries: 'countries'
 } as const;
 
 // ============ GLOBAL TIER ============

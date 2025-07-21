@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { deleteProduct } from '@/server/actions/products';
-import React, { useTransition } from 'react';
+import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 export default function DeleteProductAlertDialogContent({

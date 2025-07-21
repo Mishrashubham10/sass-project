@@ -59,19 +59,16 @@ export async function updateProdudct(
 // =========== DELETE PRODUCT ACTION ==============
 export async function deleteProduct(id: string) {
   const { userId } = await auth();
+  const errorMessage = 'There was an error deleting your product';
 
-  const errorMsg = 'There was an error deleting your product.';
-
-  if (userId == null)
-    return {
-      error: true,
-      message: errorMsg,
-    };
+  if (userId == null) {
+    return { error: true, message: errorMessage };
+  }
 
   const isSuccess = await deleteProductDb({ id, userId });
 
   return {
     error: !isSuccess,
-    message: isSuccess ? 'Successfully deleted your product' : errorMsg,
+    message: isSuccess ? 'Successfully deleted your product' : errorMessage,
   };
 }
