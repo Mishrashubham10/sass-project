@@ -71,7 +71,9 @@ function DetailsTab({
         <CardTitle className="text-xl">Product Details</CardTitle>
       </CardHeader>
       <CardContent>
-        <ProductDetailForm product={{ ...product, description: product.description ?? '' }} />
+        <ProductDetailForm
+          product={{ ...product, description: product.description ?? '' }}
+        />
       </CardContent>
     </Card>
   );
