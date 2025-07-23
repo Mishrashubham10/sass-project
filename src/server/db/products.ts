@@ -12,9 +12,8 @@ import {
   getUserTag,
   revalidateDbCache,
 } from '@/lib/cache';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, sql } from 'drizzle-orm';
 import { BatchItem } from 'drizzle-orm/batch';
-import { id } from 'zod/v4/locales';
 
 // ========== GET PRODUCT COUNTRY GROUP ===========
 export function getProductCountryGroups({
@@ -51,7 +50,10 @@ export function getProductCustomization({
 }
 
 // ============== GET PRODUCTS ================
-export function getProducts(userId: string, { limit }: { limit?: number }) {
+export function getProducts(
+  userId: string,
+  { limit }: { limit?: number } = {}
+) {
   const cacheFn = dbCache(getProductsInternal, {
     tags: [getUserTag(userId, CACHE_TAGS.products)],
   });
@@ -72,6 +74,15 @@ export async function getProduct({
   });
 
   return cacheFn({ id, userId });
+}
+
+// ========== GET A PRODUCT ==============
+export async function getProductCount(userId: string) {
+  const cacheFn = dbCache(getProductCountInternal, {
+    tags: [getUserTag(userId, CACHE_TAGS.products)],
+  });
+
+  return cacheFn(userId);
 }
 
 // ============== CREATE PRODUCTS ================
@@ -298,4 +309,14 @@ async function getProductCustomizationInternal({
   });
 
   return data?.productCustomization;
+}
+
+// ======= GET PRODUCT COUNT INTERNAL ==========
+async function getProductCountInternal(userId: string) {
+  const counts = await db
+    .select({ productCount: count() })
+    .from(ProductTable)
+    .where(eq(ProductTable.clerkUserId, userId));
+
+  return counts[0]?.productCount ?? 0;
 }

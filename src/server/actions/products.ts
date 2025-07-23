@@ -26,7 +26,7 @@ import {
 import { redirect } from 'next/navigation';
 
 // ========== PERMISSIONS ===========
-import { canCustomizeBanner } from '../permissions';
+import { canCreateProduct, canCustomizeBanner } from '../permissions';
 
 // =========== CREATE PRODUCT ACTION ==============
 export async function createProdudct(
@@ -34,8 +34,9 @@ export async function createProdudct(
 ): Promise<{ error: boolean; message: string } | undefined> {
   const { userId } = await auth();
   const { success, data } = productDetailsSchema.safeParse(unsafeData);
+  const canCreate = await canCreateProduct(userId);
 
-  if (!success || userId == null) {
+  if (!success || userId == null || !canCreate) {
     return { error: true, message: 'There was an error creating your product' };
   }
 

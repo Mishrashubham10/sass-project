@@ -11,7 +11,7 @@ export default function NavBar() {
           <BrandLogo />
         </Link>
         <Link href="/dashboard/products">Products</Link>
-        <Link href="/dashboard/analytics">Products</Link>
+        <Link href="/dashboard/analytics">Analytics</Link>
         <Link href="/dashboard/subscription">Subscription</Link>
         <UserButton />
       </nav>
