@@ -1,5 +1,9 @@
 import { db } from '@/drizzle/db';
-import { ProductCustomizationTable, ProductTable } from '@/drizzle/schema';
+import {
+  CountryGroupDiscountTable,
+  ProductCustomizationTable,
+  ProductTable,
+} from '@/drizzle/schema';
 import {
   CACHE_TAGS,
   dbCache,
@@ -8,7 +12,8 @@ import {
   getUserTag,
   revalidateDbCache,
 } from '@/lib/cache';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { BatchItem } from 'drizzle-orm/batch';
 
 // ========== GET PRODUCT COUNTRY GROUP ===========
 export function getProductCountryGroups({
@@ -123,6 +128,63 @@ export async function deleteProduct({
   }
 
   return rowCount > 0;
+}
+
+// ========= UPDATE COUNTRY DISCOUNTS ==========
+export async function updateCountryDiscounts(
+  deleteGroup: { countryGroupId: string }[],
+  insertGroup: (typeof CountryGroupDiscountTable.$inferInsert)[],
+  { productId, userId }: { productId: string; userId: string }
+) {
+  const product = await getProduct({ id: productId, userId });
+  if (!product) return false;
+
+  const statements: BatchItem<'pg'>[] = [];
+  if (deleteGroup.length > 0) {
+    statements.push(
+      db.delete(CountryGroupDiscountTable).where(
+        and(
+          eq(CountryGroupDiscountTable.productId, productId),
+          inArray(
+            CountryGroupDiscountTable.countryGroupId,
+            deleteGroup.map((group) => group.countryGroupId)
+          )
+        )
+      )
+    );
+  }
+
+  if (insertGroup.length > 0) {
+    statements.push(
+      db
+        .insert(CountryGroupDiscountTable)
+        .values(insertGroup)
+        .onConflictDoUpdate({
+          target: [
+            CountryGroupDiscountTable.productId,
+            CountryGroupDiscountTable.countryGroupId,
+          ],
+          set: {
+            coupon: sql.raw(
+              `excluded.${CountryGroupDiscountTable.coupon.name}`
+            ),
+            discountPercentage: sql.raw(
+              `excluded.${CountryGroupDiscountTable.discountPercentage.name}`
+            ),
+          },
+        })
+    );
+  }
+
+  if (statements.length > 0) {
+    await db.batch(statements as [BatchItem<'pg'>]);
+  }
+
+  revalidateDbCache({
+    tag: CACHE_TAGS.products,
+    userId,
+    id: productId,
+  });
 }
 
 // ========== COUNTRY GROUP INTERNALS ==============

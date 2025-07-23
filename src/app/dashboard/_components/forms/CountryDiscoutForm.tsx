@@ -1,12 +1,22 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { productCountryDiscountsSchema } from '@/schema/products';
+import { updateCountryDiscounts } from '@/server/actions/products';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import z from 'zod';
 
 export default function CountryDiscoutForm({
@@ -45,12 +55,26 @@ export default function CountryDiscoutForm({
     },
   });
 
-  function onSubmit(values: z.infer<typeof productCountryDiscountsSchema>) {
-    console.log(values);
+  async function onSubmit(
+    values: z.infer<typeof productCountryDiscountsSchema>
+  ) {
+    const data = await updateCountryDiscounts(productId, values);
+
+    if (data?.message) {
+      toast(data.message, {
+        description: data.error ? 'Error' : 'Success',
+      });
+      if (data?.error) {
+        toast.error(data.message);
+      } else {
+        toast.success(data.message);
+      }
+    }
   }
 
   return (
     <Form {...form}>
+      {/* =========== FORM =========== */}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex gap-6 flex-col"
@@ -93,8 +117,8 @@ export default function CountryDiscoutForm({
                             className="w-24"
                             {...field}
                             type="number"
-                            value={field.value ?? ""}
-                            onChange={e =>
+                            value={field.value ?? ''}
+                            onChange={(e) =>
                               field.onChange(e.target.valueAsNumber)
                             }
                             min="0"
@@ -126,6 +150,13 @@ export default function CountryDiscoutForm({
             </CardContent>
           </Card>
         ))}
+
+        {/* =========== SAVE BUTTON =========== */}
+        <div className="self-end">
+          <Button disabled={form.formState.isSubmitting} type="submit">
+            Save
+          </Button>
+        </div>
       </form>
     </Form>
   );
