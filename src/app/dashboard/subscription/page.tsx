@@ -8,14 +8,14 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import {
-  subscriptionTiers,
-  subscriptionTiersInOrder,
-  TierNames,
-} from '@/data/subscriptionTier';
+import { subscriptionTiers, subscriptionTiersInOrder, TierNames } from '@/data/subscriptionTier';
 import { formatCompactNumber } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
-import { createCancelSession, createCheckoutSession, createCustomerPortalSession } from '@/server/actions/stripe';
+import {
+  createCancelSession,
+  createCheckoutSession,
+  createCustomerPortalSession,
+} from '@/server/actions/stripe';
 import { getProductCount } from '@/server/db/products';
 import { getProductViewCount } from '@/server/db/productView';
 import { getUserSubscriptionTier } from '@/server/db/subscription';
@@ -27,7 +27,6 @@ import { ReactNode } from 'react';
 export default async function SubscriptionPage() {
   const { userId, redirectToSignIn } = await auth();
   if (userId == null) return redirectToSignIn();
-
   const tier = await getUserSubscriptionTier(userId);
   const productCount = await getProductCount(userId);
   const pricingViewCount = await getProductViewCount(
@@ -41,7 +40,7 @@ export default async function SubscriptionPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Monthly Usage</CardTitle>
+              <CardTitle className="text-lg">Monthly Usage</CardTitle>
               <CardDescription>
                 {formatCompactNumber(pricingViewCount)} /{' '}
                 {formatCompactNumber(tier.maxNumberOfVisits)} pricing page
@@ -56,7 +55,7 @@ export default async function SubscriptionPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Number of Products</CardTitle>
+              <CardTitle className="text-lg">Number of Products</CardTitle>
               <CardDescription>
                 {productCount} / {tier.maxNumberOfProducts} products created
               </CardDescription>
@@ -91,7 +90,7 @@ export default async function SubscriptionPage() {
           </Card>
         )}
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-screen-xl mx-auto">
+      <div className="grid-cols-2 lg:grid-cols-4 grid gap-4 max-w-screen-xl mx-auto">
         {subscriptionTiersInOrder.map((t) => (
           <PricingCard key={t.name} currentTierName={tier.name} {...t} />
         ))}

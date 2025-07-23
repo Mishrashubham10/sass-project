@@ -181,7 +181,10 @@ export const countryGroupDiscountRelations = relations(
 );
 
 // ================ TIER ENUM ===================
-export const TierEnum = pgEnum("tier", Object.keys(subscriptionTiers) as [TierNames])
+export const TierEnum = pgEnum(
+  'tier',
+  Object.keys(subscriptionTiers) as [TierNames]
+);
 
 // ========= SUBSCRIPTION TABLE =============
 export const UserSubscriptionTable = pgTable(
@@ -190,17 +193,18 @@ export const UserSubscriptionTable = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     clerkUserId: text('clerk_user_id').notNull().unique(),
     stripeSubscriptionItemId: text('stripe_subscription_item_id'),
+    stripeSubscriptionId: text('stripe_subscription_id'),
     stripeCustomerId: text('stripe_customer_id'),
     tier: TierEnum('tier').notNull(),
     createdAt,
     updatedAt,
   },
   (table) => ({
-    clerkUserIdIndex: index('user_subscription.clerk_user_id_index').on(
+    clerkUserIdIndex: index('user_subscriptions.clerk_user_id_index').on(
       table.clerkUserId
     ),
     stripeCustomerIdIndex: index(
-      'user_subscription.stripe_customer_id_index'
+      'user_subscriptions.stripe_customer_id_index'
     ).on(table.stripeCustomerId),
   })
 );

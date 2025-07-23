@@ -7,6 +7,7 @@ import {
   getUserTag,
   revalidateDbCache,
 } from '@/lib/cache';
+import { SQL } from 'drizzle-orm';
 
 // =========== CREATE SUBSCRIPTIONS ==============
 export async function createUserSubscription(
@@ -41,6 +42,29 @@ export function getUserSubscription(userId: string) {
   });
 
   return cacheFn(userId);
+}
+
+//  ========== UPDATE SUBSCRIPITON =============
+export async function updateUserSubscription(
+  where: SQL,
+  data: Partial<typeof UserSubscriptionTable.$inferInsert>
+) {
+  const [updatedSubscription] = await db
+    .update(UserSubscriptionTable)
+    .set(data)
+    .where(where)
+    .returning({
+      id: UserSubscriptionTable.id,
+      userId: UserSubscriptionTable.clerkUserId,
+    });
+
+  if (updatedSubscription != null) {
+    revalidateDbCache({
+      tag: CACHE_TAGS.subscription,
+      userId: updatedSubscription.userId,
+      id: updatedSubscription.id,
+    });
+  }
 }
 
 // ========= GET USER SUBSCRIPTION TIER ==========
