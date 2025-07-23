@@ -14,6 +14,7 @@ import {
 } from '@/lib/cache';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { BatchItem } from 'drizzle-orm/batch';
+import { id } from 'zod/v4/locales';
 
 // ========== GET PRODUCT COUNTRY GROUP ===========
 export function getProductCountryGroups({
@@ -29,6 +30,21 @@ export function getProductCountryGroups({
       getGlobalTag(CACHE_TAGS.countries),
       getGlobalTag(CACHE_TAGS.countryGroups),
     ],
+  });
+
+  return cacheFn({ productId, userId });
+}
+
+// ========== GET PRODUCT CUSTOMIZATION ============
+export function getProductCustomization({
+  productId,
+  userId,
+}: {
+  productId: string;
+  userId: string;
+}) {
+  const cacheFn = dbCache(getProductCustomizationInternal, {
+    tags: [getIdTag(productId, CACHE_TAGS.products)],
   });
 
   return cacheFn({ productId, userId });
@@ -187,6 +203,26 @@ export async function updateCountryDiscounts(
   });
 }
 
+// ========== UPDATE PRODUCT CUSTOMIZATION ===========
+export async function updateProductCustomization(
+  data: Partial<typeof ProductCustomizationTable.$inferInsert>,
+  { productId, userId }: { productId: string; userId: string }
+) {
+  const product = await getProduct({ id: productId, userId });
+  if (product == null) return;
+
+  await db
+    .update(ProductCustomizationTable)
+    .set(data)
+    .where(eq(ProductCustomizationTable.productId, productId));
+
+  revalidateDbCache({
+    tag: CACHE_TAGS.products,
+    userId,
+    id: productId,
+  });
+}
+
 // ========== COUNTRY GROUP INTERNALS ==============
 async function getProductCountryGroupsInternal({
   userId,
@@ -243,4 +279,23 @@ function getProductInternal({ id, userId }: { id: string; userId: string }) {
     where: ({ clerkUserId, id: idCol }, { eq, and }) =>
       and(eq(clerkUserId, userId), eq(idCol, id)),
   });
+}
+
+// ======= GET PRODUCT CUSTOMIZATION INTERNAL ======
+async function getProductCustomizationInternal({
+  productId,
+  userId,
+}: {
+  productId: string;
+  userId: string;
+}) {
+  const data = await db.query.ProductTable.findFirst({
+    where: ({ id, clerkUserId }, { and, eq }) =>
+      and(eq(id, productId), eq(clerkUserId, userId)),
+    with: {
+      productCustomization: true,
+    },
+  });
+
+  return data?.productCustomization;
 }

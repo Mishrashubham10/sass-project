@@ -3,6 +3,7 @@
 // ============ SCHEMA ============
 import {
   productCountryDiscountsSchema,
+  productCustomizationSchema,
   productDetailsSchema,
 } from '@/schema/products';
 
@@ -18,10 +19,14 @@ import {
   deleteProduct as deleteProductDb,
   updateProduct as updateProductDb,
   updateCountryDiscounts as updateCountryDiscountsDb,
+  updateProductCustomization as updateProductCustomizationDb,
 } from '@/server/db/products';
 
 // ========== NEXT NAVIGATION ===========
 import { redirect } from 'next/navigation';
+
+// ========== PERMISSIONS ===========
+import { canCustomizeBanner } from '../permissions';
 
 // =========== CREATE PRODUCT ACTION ==============
 export async function createProdudct(
@@ -77,7 +82,7 @@ export async function deleteProduct(id: string) {
   };
 }
 
-// ========= UPDATE COUNTRY DISCOUNT =========
+// ========= UPDATE COUNTRY DISCOUNT ACTION =========
 export async function updateCountryDiscounts(
   id: string,
   unsafeData: z.infer<typeof productCountryDiscountsSchema>
@@ -121,4 +126,25 @@ export async function updateCountryDiscounts(
   await updateCountryDiscountsDb(deleteIds, insert, { productId: id, userId });
 
   return { error: false, message: 'Country discounts saved' };
+}
+
+// ======= UPDATE PRODUCT CUSTOMIZATION ACTION ========
+export async function updateProductCustomization(
+  id: string,
+  unsafeData: z.infer<typeof productCustomizationSchema>
+) {
+  const { userId } = await auth();
+  const { success, data } = productCustomizationSchema.safeParse(unsafeData);
+  const canCustomize = await canCustomizeBanner(userId);
+
+  if (!success || userId == null || !canCustomize) {
+    return {
+      error: true,
+      message: 'There was an error updating your banner',
+    };
+  }
+
+  await updateProductCustomizationDb(data, { productId: id, userId });
+
+  return { error: false, message: 'Banner updated' };
 }

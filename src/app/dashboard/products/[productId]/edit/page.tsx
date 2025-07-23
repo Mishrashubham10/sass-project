@@ -1,6 +1,10 @@
+// =========== FORM & BUTTON COMPONENT ============
 import CountryDiscoutForm from '@/app/dashboard/_components/forms/CountryDiscoutForm';
+import ProductCustomizationForm from '@/app/dashboard/_components/forms/ProductCustomizationForm';
 import ProductDetailForm from '@/app/dashboard/_components/forms/ProductDetailForm';
 import PageWithBackButton from '@/app/dashboard/_components/PageWithBackButton';
+
+// =========== SHADCN CARD COMPONENTS ==========
 import {
   Card,
   CardContent,
@@ -8,9 +12,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+
+// =========== SHADCN TAB COMPONENTS ==========
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getProduct, getProductCountryGroups } from '@/server/db/products';
+
+// =========== SERVER DB ACTIONS ==========
+import { getProduct, getProductCountryGroups, getProductCustomization } from '@/server/db/products';
+import { canCustomizeBanner, canRemoveBranding } from '@/server/permissions';
+
+// =========== CLERK SERVER ==========
 import { auth } from '@clerk/nextjs/server';
+
+// =========== NEXT / LINK ==========
 import { notFound } from 'next/navigation';
 
 export default async function EditProductPage({
@@ -40,14 +53,17 @@ export default async function EditProductPage({
           <TabsTrigger value="countries">Country</TabsTrigger>
           <TabsTrigger value="customization">Customization</TabsTrigger>
         </TabsList>
+         {/* ======== DETAILS TAB ========== */}
         <TabsContent value="details">
           <DetailsTab product={product} />
         </TabsContent>
+         {/* ======== COUNTRY TAB ========== */}
         <TabsContent value="countries">
           <CountryTab productId={productId} userId={userId} />
         </TabsContent>
+        {/* ======== CUSTOMIZATION TAB ========== */}
         <TabsContent value="customization">
-          {/* <CustomizationsTab productId={productId} userId={userId} /> */}
+          <CustomizationsTab productId={productId} userId={userId} />
           Customization
         </TabsContent>
       </Tabs>
@@ -55,6 +71,7 @@ export default async function EditProductPage({
   );
 }
 
+// ============ DETAILS TAB =============
 function DetailsTab({
   product,
 }: {
@@ -79,6 +96,7 @@ function DetailsTab({
   );
 }
 
+// ============= COUNTRY TAB =============
 async function CountryTab({
   productId,
   userId,
@@ -108,4 +126,33 @@ async function CountryTab({
       </CardContent>
     </Card>
   );
+}
+
+
+// ============= CUSTOMIZATION TAB =============
+async function CustomizationsTab({
+  productId,
+  userId,
+}: {
+  productId: string
+  userId: string
+}) {
+  const customization = await getProductCustomization({ productId, userId })
+
+  if (customization == null) return notFound()
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl">Banner Customization</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ProductCustomizationForm
+          canRemoveBranding={await canRemoveBranding(userId)}
+          canCustomizeBanner={await canCustomizeBanner(userId)}
+          customization={customization}
+        />
+      </CardContent>
+    </Card>
+  )
 }

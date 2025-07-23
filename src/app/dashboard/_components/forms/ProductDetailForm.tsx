@@ -24,7 +24,10 @@ import { Button } from '@/components/ui/button';
 // ========= PRODUCT SCHEMA =========
 import { productDetailsSchema } from '@/schema/products';
 import { createProdudct, updateProdudct } from '@/server/actions/products';
+
+// ====== SOONER & CUSTOMIZED ICON ========
 import { toast } from 'sonner';
+import RequiredLabelIcon from '@/components/RequiredLabelIcon';
 
 export default function ProductDetailForm({
   product,
@@ -78,7 +81,7 @@ export default function ProductDetailForm({
               <FormItem>
                 <FormLabel>
                   Product Name
-                  {/* <RequiredLabelIcon /> */}
+                  <RequiredLabelIcon />
                 </FormLabel>
                 <FormControl>
                   <Input {...field} />
@@ -94,7 +97,7 @@ export default function ProductDetailForm({
               <FormItem>
                 <FormLabel>
                   Enter your website URL
-                  {/* <RequiredLabelIcon /> */}
+                  <RequiredLabelIcon />
                 </FormLabel>
                 <FormControl>
                   <Input {...field} />
